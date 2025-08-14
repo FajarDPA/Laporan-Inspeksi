@@ -103,9 +103,12 @@ def insert_image_into_cell(cell, tbl: Table, image_bytes: bytes):
     cell.text = ""
     par = cell.paragraphs[0] if cell.paragraphs else cell.add_paragraph()
     par.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-    cell_width_in = _estimate_cell_width_inches(cell, tbl)
+    # Menggunakan ukuran tetap untuk gambar agar seragam
+    width_in = Inches(3.0)  # Lebar gambar lanskap
+    height_in = Inches(2.25) # Tinggi gambar lanskap (rasio 4:3)
+    
     run = par.add_run()
-    run.add_picture(io.BytesIO(image_bytes), width=Inches(cell_width_in))
+    run.add_picture(io.BytesIO(image_bytes), width=width_in, height=height_in)
 
 def find_paragraph_with_text(doc: Document, placeholder: str):
     for p in doc.paragraphs:
@@ -257,8 +260,8 @@ if "dok_rows" not in st.session_state:
 def render_preview_50(file_bytes):
     try:
         with Image.open(io.BytesIO(file_bytes)) as img:
-            w, h = img.size
-            img_resized = img.resize((max(1, w // 2), max(1, h // 2)))
+            # Mengubah ukuran gambar ke rasio lanskap 4:3 untuk preview
+            img_resized = img.resize((400, 300))
         st.image(img_resized, use_container_width=False)
     except Exception:
         st.warning("Format gambar tidak valid.")
