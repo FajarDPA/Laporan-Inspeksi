@@ -226,7 +226,7 @@ st.title("Inspection Report Filler")
 st.markdown("Aplikasi ini akan secara otomatis mengambil template dari GitHub.")
 # Ganti URL ini dengan URL file .docx mentah (raw) Anda di GitHub.
 # Anda bisa mendapatkannya dengan membuka file di GitHub, lalu klik tombol "Raw".
-template_url = "https://github.com/dpagls/laporan-inspeksi/raw/main/Inspection%20Report%20Template.docx"
+template_url = "https://github.com/FajarDPA/Laporan-Inspeksi/raw/main/Inspection%20Report%20Template.docx"
 
 # Mengambil template dari URL
 try:
