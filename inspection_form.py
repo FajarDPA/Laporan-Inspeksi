@@ -247,15 +247,8 @@ vessel_list = [
     "MT SELUMA EXPRESS", "MV. AMOLONGO EMRAN", "MV. NIMAOME EMRAN", "MV. SYABIL EMRAN"
 ]
 
-with st.sidebar:
-    st.header("Options")
-    initial_rows = st.number_input(
-        "Initial Dokumentasi rows (setiap row = 1 slot kiri ATAU kanan)",
-        min_value=1, max_value=50, value=10, step=1
-    )
-
-if "dok_rows" not in st.session_state:
-    st.session_state.dok_rows = int(initial_rows)
+# Set nilai default untuk rows dokumentasi tanpa menampilkan input
+st.session_state.dok_rows = 10 
 
 def render_preview_50(file_bytes):
     try:
@@ -346,18 +339,13 @@ st.button("➕ Tambah Row Dokumentasi", on_click=add_dok_row)
 st.markdown("---")
 
 # -----------------------------------------
-# Bagian baru untuk konfigurasi email
+# Konfigurasi Email di kode (tidak di UI)
 # -----------------------------------------
-st.subheader("Konfigurasi Email")
-st.info("Masukkan detail webmail Anda. Jika Anda tidak yakin, silakan hubungi penyedia hosting web Anda.")
-
-with st.expander("Klik untuk memasukkan detail SMTP webmail"):
-    email_sender = st.text_input("Email Pengirim", value="fajar@dpagls.my.id")
-    email_password = st.text_input("Kata Sandi Email", type="password")
-    smtp_server = st.text_input("Server SMTP", value="mail.dpagls.my.id")
-    smtp_port = st.text_input("Port SMTP", value="465", help="Port umum adalah 465 (SSL) atau 587 (TLS).")
-
-email_to_send = st.text_input("Email Penerima")
+email_sender = "fajar@dpagls.my.id"
+email_password = "Rahasia100%"  # Diisi langsung di kode
+smtp_server = "mail.dpagls.my.id"
+smtp_port = "465"
+email_to_send = "fajar@dpagls.my.id" # Email tujuan, bisa diganti
 
 # -----------------------------------------
 # Generate Report
@@ -365,9 +353,6 @@ email_to_send = st.text_input("Email Penerima")
 if st.button("📝 Generate Report"):
     if not template_file:
         st.error("Silakan upload Word template terlebih dahulu.")
-        st.stop()
-    if not email_to_send:
-        st.error("Silakan masukkan alamat email penerima.")
         st.stop()
     
     try:
