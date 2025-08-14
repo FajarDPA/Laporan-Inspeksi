@@ -339,13 +339,18 @@ st.button("➕ Tambah Row Dokumentasi", on_click=add_dok_row)
 st.markdown("---")
 
 # -----------------------------------------
-# Konfigurasi Email di kode (tidak di UI)
+# Konfigurasi Email
 # -----------------------------------------
-email_sender = "fajar@dpagls.my.id"
-email_password = "Rahasia100%"  # Diisi langsung di kode
-smtp_server = "mail.dpagls.my.id"
-smtp_port = "465"
-email_to_send = "fajar@dpagls.my.id" # Email tujuan, bisa diganti
+st.subheader("Konfigurasi Email")
+st.info("Masukkan detail webmail Anda. Jika tidak diubah, detail default akan digunakan.")
+
+with st.expander("Klik untuk memasukkan detail SMTP webmail"):
+    email_sender = st.text_input("Email Pengirim", value="fajar@dpagls.my.id")
+    email_password = st.text_input("Kata Sandi Email", type="password", value="Rahasia100%")
+    smtp_server = st.text_input("Server SMTP", value="mail.dpagls.my.id")
+    smtp_port = st.text_input("Port SMTP", value="465", help="Port umum adalah 465 (SSL) atau 587 (TLS).")
+
+email_to_send = st.text_input("Email Penerima")
 
 # -----------------------------------------
 # Generate Report
@@ -353,6 +358,9 @@ email_to_send = "fajar@dpagls.my.id" # Email tujuan, bisa diganti
 if st.button("📝 Generate Report"):
     if not template_file:
         st.error("Silakan upload Word template terlebih dahulu.")
+        st.stop()
+    if not email_to_send:
+        st.error("Silakan masukkan alamat email penerima.")
         st.stop()
     
     try:
