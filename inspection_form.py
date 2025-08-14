@@ -9,6 +9,7 @@ from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.table import Table
 import subprocess
 import sys
+import requests # New library to fetch files from URL
 
 # Pustaka untuk mengirim email
 import smtplib
@@ -221,8 +222,22 @@ def send_email_with_attachment(
 st.set_page_config(page_title="Inspection Report Filler", layout="wide")
 st.title("Inspection Report Filler")
 
-st.markdown("Upload your Word template (**Inspection Report Template.docx**) di bawah ini.")
-template_file = st.file_uploader("Word Template (.docx)", type=["docx"])
+# Konfigurasi URL template .docx
+st.markdown("Aplikasi ini akan secara otomatis mengambil template dari GitHub.")
+# Ganti URL ini dengan URL file .docx mentah (raw) Anda di GitHub.
+# Anda bisa mendapatkannya dengan membuka file di GitHub, lalu klik tombol "Raw".
+template_url = "https://github.com/dpagls/laporan-inspeksi/raw/main/Inspection%20Report%20Template.docx"
+
+# Mengambil template dari URL
+try:
+    with st.spinner('Mengambil template dari GitHub...'):
+        response = requests.get(template_url)
+        response.raise_for_status()  # Raises an HTTPError if the status is bad
+    template_file = io.BytesIO(response.content)
+except requests.exceptions.RequestException as e:
+    st.error(f"Gagal mengambil template dari GitHub: {e}. Pastikan URL-nya benar.")
+    st.stop()
+
 
 vessel_list = [
     "MV NAZIHA", "MV AMMAR", "MV NAMEERA", "MV ARFIANIE AYU", "MV SAMI",
@@ -346,15 +361,12 @@ email_to_send = st.text_input("Email Penerima")
 # Generate Report
 # -----------------------------------------
 if st.button("📝 Generate Report"):
-    if not template_file:
-        st.error("Silakan upload Word template terlebih dahulu.")
-        st.stop()
     if not email_to_send:
         st.error("Silakan masukkan alamat email penerima.")
         st.stop()
     
     try:
-        doc = Document(io.BytesIO(template_file.getvalue()))
+        doc = Document(template_file)
     except Exception:
         st.error("Template .docx tidak valid atau rusak.")
         st.stop()
