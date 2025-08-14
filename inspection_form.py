@@ -321,7 +321,7 @@ for left_idx, right_idx in row_pairs:
 
 def add_dok_row():
     st.session_state.dok_rows += 2
-    st.experimental_rerun()
+    st.rerun()
 
 st.markdown("---")
 st.button("➕ Tambah Row Dokumentasi", on_click=add_dok_row)
