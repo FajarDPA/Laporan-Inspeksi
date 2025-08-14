@@ -342,13 +342,13 @@ st.markdown("---")
 # Konfigurasi Email
 # -----------------------------------------
 st.subheader("Konfigurasi Email")
-st.info("Masukkan detail webmail Anda. Jika tidak diubah, detail default akan digunakan.")
+st.info("Masukkan email penerima di bawah ini.")
 
-with st.expander("Klik untuk memasukkan detail SMTP webmail"):
-    email_sender = st.text_input("Email Pengirim", value="fajar@dpagls.my.id")
-    email_password = st.text_input("Kata Sandi Email", type="password", value="Rahasia100%")
-    smtp_server = st.text_input("Server SMTP", value="mail.dpagls.my.id")
-    smtp_port = st.text_input("Port SMTP", value="465", help="Port umum adalah 465 (SSL) atau 587 (TLS).")
+# Konfigurasi SMTP diatur di sini, tidak terlihat oleh pengguna
+email_sender = "fajar@dpagls.my.id"
+email_password = "Rahasia100%"
+smtp_server = "mail.dpagls.my.id"
+smtp_port = "465"
 
 email_to_send = st.text_input("Email Penerima")
 
