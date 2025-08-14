@@ -247,16 +247,30 @@ except requests.exceptions.RequestException as e:
     st.stop()
 
 
-vessel_list = [
-    "MV NAZIHA", "MV AMMAR", "MV NAMEERA", "MV ARFIANIE AYU", "MV SAMI",
-    "MV KAREEM", "MV NADHIF", "MV KAYSAN", "MV ABDUL HAMID", "MV NASHALINA",
-    "MV GUNALEILA", "MV NUR AWLIYA", "MV NATASCHA", "MV SARAH S", "MV MARIA NASHWAH",
-    "MV ZALEHA FITRAT", "MV HAMMADA", "MV KAMADIYA", "MV MUBASYIR", "MV MUHASYIR",
-    "MV MUNQIDZ", "MV MUHARRIK", "MV MUMTAZ", "MV UNITAMA LILY", "MT SIL EXPRESS",
-    "MT KENCANA EXPRESS", "MV RIMBA EMPAT", "MV MUADZ", "MV MUNIF", "MV RAFA",
-    "MT BIO EXPRESS", "MV NOUR MUSHTOFA", "MV FEIZA", "MV MURSYID", "MV AFKAR",
-    "MT SELUMA EXPRESS", "MV. AMOLONGO EMRAN", "MV. NIMAOME EMRAN", "MV. SYABIL EMRAN"
-]
+# Lists of vessels for each type
+vessel_lists = {
+    "Bulk Carrier": [
+        "MV NAZIHA", "MV AMMAR", "MV NAMEERA", "MV ARFIANIE AYU", "MV SAMI",
+        "MV KAREEM", "MV NADHIF", "MV KAYSAN", "MV ABDUL HAMID", "MV NASHALINA",
+        "MV GUNALEILA", "MV NUR AWLIYA", "MV NATASCHA", "MV SARAH S", "MV MARIA NASHWAH",
+        "MV ZALEHA FITRAT", "MV HAMMADA", "MV KAMADIYA", "MV MUBASYIR", "MV MUHASYIR",
+        "MV MUNQIDZ", "MV MUHARRIK", "MV MUMTAZ", "MV UNITAMA LILY", "MV RIMBA EMPAT",
+        "MV MUADZ", "MV MUNIF", "MV RAFA", "MV NOUR MUSHTOFA", "MV FEIZA",
+        "MV MURSYID", "MV AFKAR", "MV. AMOLONGO EMRAN", "MV. NIMAOME EMRAN",
+        "MV. SYABIL EMRAN"
+    ],
+    "Tanker": [
+        "MT BIO EXPRESS", "MT KENCANA EXPRESS", "MT SIL EXPRESS", "MT SELUMA EXPRESS"
+    ],
+    "Tug&Barge": [
+        "TB. AZALEA", "TB. GRENADA", "TB. MAGNOLIA", "TB. ZINNIA", "TB. JAZZY",
+        "TB. AMARILLYS", "TB. FENNEL", "TB. LAUREL", "TB. JASMINE", "TB. CAMELIA",
+        "TB. MULBERRY", "TB. FUSCHIA", "TB. IRIS", "TB. JUNIPER", "TB. SPEEDWELL",
+        "TB. MIMOSA", "TB. IVY", "TB. SORREL", "TB. GERBERA", "TB. CLEMATIS",
+        "TB. EUSTOMA", "TB. FEIHA", "TB. EHSAL", "TB. GMS CEMERLANG 1", "TB. GMS CEMERLANG 2",
+        "TB. ALYSUM", "TB. CATALEYA", "TB. GMS CEMERLANG 3"
+    ]
+}
 
 # Set nilai default untuk rows dokumentasi tanpa menampilkan input
 if "dok_rows" not in st.session_state:
@@ -289,13 +303,15 @@ st.markdown("---")
 st.subheader("Vessel Details")
 col1, col2 = st.columns(2, gap="large")
 with col1:
-    vessel_name = st.selectbox("Vessel (*VESSEL*)", options=vessel_list)
+    ship_type = st.selectbox("Type (*TYPE*)", options=["Bulk Carrier", "Tanker", "Tug&Barge"])
+    # Menampilkan daftar kapal yang relevan berdasarkan tipe yang dipilih
+    vessel_options = vessel_lists.get(ship_type, [])
+    vessel_name = st.selectbox("Vessel (*VESSEL*)", options=vessel_options)
     imo = st.text_input("IMO (*IMO*)")
 with col2:
-    ship_type = st.selectbox("Type (*TYPE*)", options=["Bulk Carrier", "Tanker"])
     callsign = st.text_input("Callsign (*CALLSIGN*)")
+    place = st.text_input("Place (*PLACEDATE*)", placeholder="e.g., Jakarta")
 
-place = st.text_input("Place (*PLACEDATE*)", placeholder="e.g., Jakarta")
 survey_date = st.date_input("Date (*PLACEDATE*)", value=date.today())
 master = st.text_input("Master (*MASTER*)")
 surveyor = st.text_input("Surveyor (*SURVEYOR*)")
