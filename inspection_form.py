@@ -259,7 +259,7 @@ def render_preview_50(file_bytes):
         with Image.open(io.BytesIO(file_bytes)) as img:
             w, h = img.size
             img_resized = img.resize((max(1, w // 2), max(1, h // 2)))
-        st.image(img_resized, use_column_width=False)
+        st.image(img_resized, use_container_width=False)
     except Exception:
         st.warning("Format gambar tidak valid.")
 
