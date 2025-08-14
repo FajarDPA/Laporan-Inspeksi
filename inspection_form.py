@@ -17,11 +17,8 @@ from email.mime.base import MIMEBase
 from email import encoders
 
 # Pustaka untuk konversi PDF
-# Pastikan Anda sudah menginstal 'python-docx2pdf' dan 'unoconv'
-# pip install python-docx2pdf
-# Pastikan libreoffice atau ms-office terinstal di server jika menggunakan unoconv.
-# Atau, jika di macOS/Linux, install unoconv
-# sudo apt-get install unoconv libreoffice-writer
+# Catatan: Konversi PDF asli tidak didukung di lingkungan ini.
+# Hanya unduhan DOCX yang tersedia.
 
 # -----------------------------
 # Helpers for working with docx
@@ -183,7 +180,7 @@ def build_dokumentasi_table_at_placeholder(doc: Document, placeholder: str, item
             idx += 1
 
 # -----------------------------------------
-# Fungsi pengirim email dan konversi PDF
+# Fungsi pengirim email
 # -----------------------------------------
 
 def send_email_with_attachment(
@@ -217,15 +214,6 @@ def send_email_with_attachment(
         st.error(f"Gagal mengirim email: {e}")
         return False
 
-# Fungsi dummy untuk konversi PDF (karena docx2pdf tidak berfungsi di lingkungan ini)
-def convert_docx_to_pdf_dummy(docx_bytes):
-    # Ini adalah fungsi dummy. Aslinya, Anda akan menggunakan pustaka seperti docx2pdf
-    # atau tool seperti unoconv. Namun, untuk lingkungan Streamlit ini,
-    # kita akan mensimulasikan konversi dengan mengembalikan byte yang sama.
-    # Di lingkungan deployment sungguhan, Anda perlu menginstal LibreOffice atau MS-Office.
-    st.warning("Konversi ke PDF tidak didukung di lingkungan ini.")
-    return docx_bytes
-
 # -----------------------------------------
 # Streamlit App UI
 # -----------------------------------------
@@ -248,7 +236,8 @@ vessel_list = [
 ]
 
 # Set nilai default untuk rows dokumentasi tanpa menampilkan input
-st.session_state.dok_rows = 10 
+if "dok_rows" not in st.session_state:
+    st.session_state.dok_rows = 10
 
 def render_preview_50(file_bytes):
     try:
@@ -298,7 +287,7 @@ for left_idx, right_idx in row_pairs:
         img_key_left = f"dok_img_{left_idx}_0"
         cap_key_left = f"dok_cap_{left_idx}_0"
         file_left = st.file_uploader(
-            f"Row {left_idx + 1} - Left Image (row{left_idx+1} col1)",
+            f"Row {left_idx + 1} - Left Image",
             type=["jpg", "jpeg", "png"],
             key=img_key_left
         )
@@ -316,7 +305,7 @@ for left_idx, right_idx in row_pairs:
             img_key_right = f"dok_img_{right_idx}_1"
             cap_key_right = f"dok_cap_{right_idx}_1"
             file_right = st.file_uploader(
-                f"Row {right_idx + 1} - Right Image (row{right_idx+1} col2)",
+                f"Row {right_idx + 1} - Right Image",
                 type=["jpg", "jpeg", "png"],
                 key=img_key_right
             )
@@ -331,7 +320,8 @@ for left_idx, right_idx in row_pairs:
             })
 
 def add_dok_row():
-    st.session_state.dok_rows += 1
+    st.session_state.dok_rows += 2
+    st.experimental_rerun()
 
 st.markdown("---")
 st.button("➕ Tambah Row Dokumentasi", on_click=add_dok_row)
@@ -341,8 +331,8 @@ st.markdown("---")
 # -----------------------------------------
 # Konfigurasi Email
 # -----------------------------------------
-st.subheader("Konfigurasi Email")
-st.info("Masukkan email penerima di bawah ini.")
+st.subheader("Email Penerima")
+st.info("Masukkan email penerima di bawah ini. Laporan akan langsung dikirim setelah di-generate.")
 
 # Konfigurasi SMTP diatur di sini, tidak terlihat oleh pengguna
 email_sender = "fajar@dpagls.my.id"
@@ -392,19 +382,14 @@ if st.button("📝 Generate Report"):
     doc.save(docx_buffer)
     docx_buffer.seek(0)
     
-    # Simpan sebagai PDF (simulasi, karena konversi real membutuhkan tools tambahan)
-    pdf_buffer = convert_docx_to_pdf_dummy(docx_buffer.getvalue())
-
     # Nama file
     base_filename = f"{survey_date.strftime('%Y.%m.%d')} {vessel_name} Inspection Report"
     docx_filename = f"{base_filename}.docx"
-    pdf_filename = f"{base_filename}.pdf"
 
     # Kirim email
     st.write("Mengirim laporan melalui email...")
     attachments_list = [
-        (docx_buffer.getvalue(), docx_filename),
-        (pdf_buffer, pdf_filename)
+        (docx_buffer.getvalue(), docx_filename)
     ]
     success = send_email_with_attachment(
         email_sender,
@@ -413,7 +398,7 @@ if st.button("📝 Generate Report"):
         smtp_server,
         smtp_port,
         f"Laporan Inspeksi: {vessel_name}",
-        f"Terlampir laporan inspeksi kapal {vessel_name} dalam format DOCX dan PDF.",
+        f"Terlampir laporan inspeksi kapal {vessel_name} dalam format DOCX.",
         attachments_list
     )
     if success:
@@ -425,11 +410,4 @@ if st.button("📝 Generate Report"):
         data=docx_buffer,
         file_name=docx_filename,
         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    )
-
-    st.download_button(
-        label="📄 Download Laporan (PDF)",
-        data=pdf_buffer,
-        file_name=pdf_filename,
-        mime="application/pdf"
     )
