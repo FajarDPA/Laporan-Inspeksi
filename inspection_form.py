@@ -90,7 +90,8 @@ def _estimate_cell_width_inches(cell, tbl: Table):
     ncols = len(tbl.rows[0].cells) if tbl.rows and tbl.rows[0].cells else 2
     return max(0.1, (usable / ncols) - 0.05)
 
-def insert_image_into_cell(cell, tbl: Table, image_bytes: bytes):
+def insert_image_into_cell(cell, tbl: Table, image_bytes: bytes, sizing_mode='adaptive'):
+    """Memasukkan gambar ke dalam sel dengan mode ukuran yang berbeda."""
     if not image_bytes:
         return
     try:
@@ -103,12 +104,17 @@ def insert_image_into_cell(cell, tbl: Table, image_bytes: bytes):
     cell.text = ""
     par = cell.paragraphs[0] if cell.paragraphs else cell.add_paragraph()
     par.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-    # Menggunakan ukuran tetap untuk gambar agar seragam
-    width_in = Inches(3.0)  # Lebar gambar lanskap
-    height_in = Inches(2.25) # Tinggi gambar lanskap (rasio 4:3)
     
-    run = par.add_run()
-    run.add_picture(io.BytesIO(image_bytes), width=width_in, height=height_in)
+    if sizing_mode == 'fixed':
+        # Ukuran tetap untuk gambar DOKUMENTASI agar seragam
+        width_in = Inches(3.0)  # Lebar gambar lanskap
+        height_in = Inches(2.25) # Tinggi gambar lanskap (rasio 4:3)
+        run = par.add_run()
+        run.add_picture(io.BytesIO(image_bytes), width=width_in, height=height_in)
+    else: # Mode 'adaptive' untuk FOTOHALUAN
+        cell_width_in = _estimate_cell_width_inches(cell, tbl)
+        run = par.add_run()
+        run.add_picture(io.BytesIO(image_bytes), width=Inches(cell_width_in))
 
 def find_paragraph_with_text(doc: Document, placeholder: str):
     for p in doc.paragraphs:
@@ -171,7 +177,8 @@ def build_dokumentasi_table_at_placeholder(doc: Document, placeholder: str, item
             if idx < n_items:
                 item = items[idx]
                 if item.get("image_bytes"):
-                    insert_image_into_cell(image_row.cells[c], tbl, item["image_bytes"])
+                    # Gunakan mode ukuran tetap untuk gambar dokumentasi
+                    insert_image_into_cell(image_row.cells[c], tbl, item["image_bytes"], sizing_mode='fixed')
                 else:
                     image_row.cells[c].text = ""
                 cap_text = (item.get("caption") or "").strip()
@@ -227,8 +234,6 @@ st.title("Inspection Report Filler")
 
 # Konfigurasi URL template .docx
 st.markdown("Aplikasi ini akan secara otomatis mengambil template dari GitHub.")
-# Ganti URL ini dengan URL file .docx mentah (raw) Anda di GitHub.
-# Anda bisa mendapatkannya dengan membuka file di GitHub, lalu klik tombol "Raw".
 template_url = "https://github.com/FajarDPA/Laporan-Inspeksi/raw/main/Inspection%20Report%20Template.docx"
 
 # Mengambil template dari URL
@@ -275,7 +280,9 @@ if foto_haluan_file is not None:
     st.session_state["foto_haluan_bytes"] = foto_haluan_file.getvalue()
 
 if "foto_haluan_bytes" in st.session_state:
-    render_preview_50(st.session_state["foto_haluan_bytes"])
+    st.subheader("Preview FOTOHALUAN")
+    # Tampilkan gambar dengan lebar penuh kontainer
+    st.image(st.session_state["foto_haluan_bytes"], use_container_width=True)
 
 st.markdown("---")
 
@@ -386,7 +393,8 @@ if st.button("📝 Generate Report"):
     if foto_bytes:
         cell, tbl, _, _ = find_cell_with_text(doc, "*FOTOHALUAN*")
         if cell:
-            insert_image_into_cell(cell, tbl, foto_bytes)
+            # Gunakan mode adaptif untuk gambar FOTOHALUAN
+            insert_image_into_cell(cell, tbl, foto_bytes, sizing_mode='adaptive')
             replace_placeholder_everywhere(doc, "*FOTOHALUAN*", "")
         else:
             replace_placeholder_everywhere(doc, "*FOTOHALUAN*", "")
